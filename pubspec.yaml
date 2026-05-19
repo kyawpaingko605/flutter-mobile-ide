@@ -1,0 +1,61 @@
+```dart
+import 'package:flutter/material.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+
+void main() => runApp(NebulaApp());
+
+class NebulaApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData.dark(),
+      home: NebulaIdeScreen(),
+    );
+  }
+}
+
+class NebulaIdeScreen extends StatefulWidget {
+  @override
+  _NebulaIdeScreenState createState() => _NebulaIdeScreenState();
+}
+
+class _NebulaIdeScreenState extends State<NebulaIdeScreen> {
+  // API Key ကို ဤနေရာတွင် ထည့်ပါ (GitHub မှာ တင်ရင် Environment Variable သုံးဖို့ အကြံပြုပါတယ်)
+  final model = GenerativeModel(model: 'gemini-1.5-flash', apiKey: 'YOUR_API_KEY_HERE');
+  
+  TextEditingController codeController = TextEditingController();
+  final flutterWebviewPlugin = FlutterWebviewPlugin();
+
+  Future<void> generateCode(String prompt) async {
+    final response = await model.generateContent([Content.text(prompt)]);
+    setState(() {
+      codeController.text = response.text ?? "";
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Nebula Flutter IDE")),
+      body: Column(
+        children: [
+          Expanded(child: WebviewScaffold(url: "about:blank")), // Preview Window
+          Expanded(
+            child: TextField(
+              controller: codeController,
+              maxLines: null,
+              decoration: InputDecoration(hintText: "Coding here..."),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => generateCode("Write a simple counter web app"),
+            child: Text("Generate & Compile"),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+```
